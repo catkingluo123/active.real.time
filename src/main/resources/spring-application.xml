@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+    http://www.springframework.org/schema/beans/spring-beans-4.1.xsd   
+    http://www.springframework.org/schema/context   
+    http://www.springframework.org/schema/context/spring-context-4.1.xsd  
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+    http://www.springframework.org/schema/task 
+    http://www.springframework.org/schema/task/spring-task-4.1.xsd     
+    http://www.springframework.org/schema/aop 
+     http://www.springframework.org/schema/aop/spring-aop-4.1.xsd"
+     default-lazy-init="true">
+ 
+<!-- 定时器开关 开始 -->
+	<task:annotation-driven />
+	<context:component-scan base-package="com.active.*">
+	<context:exclude-filter type="regex" expression="com.active.web.*"/>
+	</context:component-scan>
+
+	<!--<context:component-scan use-default-filters="false" base-package="com.wan.domino.*">
+		<context:include-filter  type="annotation" expression="org.springframework.stereotype.Component"/>
+		<context:include-filter  type="annotation" expression="org.springframework.stereotype.Repository"/>
+		<context:include-filter  type="annotation" expression="org.springframework.stereotype.Service"/>
+	</context:component-scan>-->
+	<!-- 统一异常处理方式 -->
+	<bean id="exceptionHandler" class="com.active.common.exception.MyExceptionHandler"/>
+	<!-- 初始化数据 -->
+	<bean id="initLoader" lazy-init="false" class="com.active.web.controller.index.InitController" init-method="init"/>
+	
+<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" >
+       <property name ="locations">
+           <list>
+            <value>classpath:jdbc.properties</value>
+           </list>
+       </property>
+       <property name="ignoreUnresolvablePlaceholders" value="true" />
+</bean>
+	<!-- 数据源的配置-->
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="driverClassName" value="${jdbc.driverClass}" />
+	</bean>
+	<!-- 分页的bean-->
+	<bean id="pagePlugin" class="com.active.web.plugin.PagePlugin">
+		<property name="properties">
+			<props>
+				<prop key="dialect">mysql</prop>
+				<prop key="pageSqlId">.*query.*</prop>
+			</props>
+		</property>
+	</bean>
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 自动匹配Mapper映射文件 -->
+		<property name="mapperLocations" value="classpath:mappings/*.xml"/>
+		<property name="typeAliasesPackage" value="com.active.common.entity"/>
+		<property name="plugins">
+			<array>
+				<ref bean="pagePlugin" />
+			</array>
+		</property>
+	</bean>
+
+
+	<!-- 通过扫描的模式，扫描目录在com.active.mapper目录下，所有的mapper都继承SqlMapper接口的接口， 这样一个bean就可以了 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+		<property name="basePackage" value="com.active.common.mapper" />
+	</bean>
+
+	<!-- 事务配置 -->
+	<bean id="transactionManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+
+	<!-- AOP切面配置，主要为Controller中的所有方法配置事务-->
+	<aop:config>
+		<aop:pointcut
+			expression="execution(public * com.active.web.controller..*.*(..))"
+			id="pointcut" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut" />
+	</aop:config>
+	<!-- AOP通知器的配置，给所有方法配置事务的传播级别-->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="query*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="find*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="save*" propagation="REQUIRED" />
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="modify*" propagation="REQUIRED" />
+			<tx:method name="logicDelById" propagation="REQUIRED" />
+			<tx:method name="*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+
+	<context:annotation-config />
+
+</beans>

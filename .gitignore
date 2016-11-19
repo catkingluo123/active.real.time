@@ -1,0 +1,6 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+target/
+.gitignore
+active_web.iml
+/src/test/

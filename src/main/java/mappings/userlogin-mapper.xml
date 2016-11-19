@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.active.common.mapper.UserLoginMapper">
+	<!-- 以下与实体类的中字段一致 -->
+	<select id="findLoginPage" resultType="com.active.common.entity.UserLoginFormMap" parameterType="com.active.common.entity.UserLoginFormMap">
+		SELECT * FROM ly_userlogin WHERE 1=1
+		<if test="accountName !=null and accountName != ''">
+			and accountName = #{accountName}
+		</if>
+		 ORDER BY id DESC
+	</select>
+</mapper>
