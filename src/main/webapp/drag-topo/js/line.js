@@ -30,7 +30,7 @@ $(function(){
 
 
     var myDate = new Date();
-    var yesterday_milliseconds=myDate.getTime()-1000*60*60*24*1;
+    var yesterday_milliseconds=myDate.getTime()-1000*60*60*24*6;
     var yesterday= new Date();
     yesterday.setTime(yesterday_milliseconds);
     $("#startday").val(getDateTime(yesterday,"YYYY-MM-DD"));
@@ -85,7 +85,7 @@ $(function(){
         endday = time.split(",")[1];
         hour = time.split(",")[2];
         layer.msg('加载中', {icon: 16});
-        paint(startday,endday,hour);
+        paint(startday,endday);
     });
 
     var timeTicket = null;
@@ -97,9 +97,9 @@ $(function(){
         endday = time.split(",")[1];
         hour = time.split(",")[2];
         if(type_flush=="flush"){
-            paint(startday,endday,hour);
+            paint(startday,endday);
         }
-    }, 60000);
+    }, 5000);
 
     function getSelectInfo(){
 
@@ -111,404 +111,91 @@ $(function(){
     }
 
 
-    function paint(startday,endday,hour){
-        for(var i=0;i<regJson.length;i++){
-            var rid = regJson[i].rid;
-            var nodeName = regJson[i].nodeName;
-            var exts = regJson[i].ext;
-            var extLength = exts.length;
-            
-            for(var j=0;j<extLength;j++){
-                var ext = exts[j];
-                
-                var attr = rid+ext;
-                if(attr=="19online_value"){
-                    var height = "1000px";
-                    $("#19online_value").css("height",height);
-                }
-                var myChart = echarts.init(document.getElementById(attr));
-                var ydata = [];
-                var xdata = [];
-                var legend = [];
-                var rid19;
-                var subtext;
-                $.ajax({
-                    type: "POST",
-                    url: rootPath + '/dataListener/getSubtext.shtml?rid='+rid+'&ext='+ext,
-                    cache:false,
-                    async: false,
-                    dataType: 'json',
-                    success: function (json) {
+    function paint(startday,endday) {
 
-                        subtext = json;
-                    }
-                });
-                
+        var myChart = echarts.init(document.getElementById("active"));
+        var ydata = [];
+        var xdata = [];
+        var legend = ['活跃数'];
 
-                $.ajax({
-                    type: "POST",
-                    url: rootPath + '/dataListener/getLineData.shtml?rid='+rid+'&ext='
-                    +ext+"&startday="+ startday+"&endday="+endday+"&hour="+hour,
-                    cache:false,
-                    async: false,
-                    dataType: 'json',
-                    success: function (json) {
-                        if(rid=="19"){
-                            
-                            rid19 = json.dpReturnResearchList;
-                        }
-                        
-                        xdata = json.xinfo;
-                        ydata = json.dpYInfo;
-                        legend = json.legend;
-                        
-                        
-                    }
-                });
-                var option = {
-                    title: {
-                        text: nodeName+":"+ext+"("+hour+"时)",
-                        subtext : subtext,
-                        x:'center'
-                    },
-                    legend: {
-                        data: legend,
-                        bottom : 0
-                    },
-                    tooltip: {
-                        trigger: 'axis',
-                        axisPointer: {
-                            animation: false
-                        }
-                    },
-                    toolbox:{
-                        show:true,
-                        feature: {
-                            dataView: {show: true, readOnly: false},
-                            magicType: {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-                            restore: {show: true},
-                            saveAsImage: {show: true}
-                        }
-                    },
-                    label:{
-                        normal:{
-                            show:true,
-                            formatter: '{c}'
-                        }
-                    },
-                    grid:{
-                        width : 'auto',
-                        height : 'auto'
-                    }
-                    ,
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        axisTick :{
-                            show:true,
-                            interval:0
-                        },
-                        //axisLabel:{
-                        //    show :true,
-                        //    interval:0
-                        //},
-                        name : "分钟",
-                        data: xdata
-                    },
-                    yAxis: {
-                        type: 'value',
-                        splitLine: {
-                            show: true
-                        }
-                        //axisLabel:{
-                        //    show :true,
-                        //    interval:0
-                        //}
-                    },
-                    series: ydata
-                };
-
-                if(rid=="18"){
-                    option.title.text=nodeName+":"+ext;
-                    option.yAxis.axisLabel = {};
-                    option.yAxis.axisLabel.show=true;
-                    option.yAxis.axisLabel.interval=0;
-                    var dt = option.legend.data;
-                    option.legend.selected = {};
-                    var length = dt.length;
-                    for (var n = 0; n < length; n++) {
-                        var val = dt[n];
-                        if(val!="所有游戏"){
-                            option.legend.selected[val] = false;
-                        }
-                    }
-                }else if(rid=="19"){
-                    var labelRight = {
-                        normal: {
-                            position: 'right'
-                        }
-                    };
-                    var labelLeft = {
-                        normal: {
-                            position: 'left'
-                        }
-                    };
-                    option = {
-                        title: {
-                            text: nodeName+":"+ext,
-                            subtext: subtext,
-                            x:'center'
-                        },
-                        tooltip : {
-                            trigger: 'axis',
-                            axisPointer : {            // 坐标轴指示器，坐标轴触发有效
-                                type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
-                            },
-                            formatter:'{a}<br />{b}:{c}'
-                        },
-                        grid: [
-                            {x: '7%', y: '7%', width: '38%', height: '25%'},
-                            {x2: '7%', y: '7%', width: '38%', height: '25%'},
-                            {x: '7%', y: '40%', width: '38%', height: '25%'},
-                            {x2: '7%', y: '40%', width: '38%', height: '25%'},
-                            {x: '7%', y2: '2%', width: '38%', height: '25%'},
-                            {x2: '7%', y2: '2%', width: '38%', height: '25%'}
-                        ],
-                        xAxis: [
-                            {
-                                gridIndex: 0,
-                                type : 'value',
-                                position: 'top',
-                                splitLine: {lineStyle:{type:'dashed'}}
-                            },
-                            {
-                                gridIndex: 1,
-                                type : 'value',
-                                position: 'top',
-                                splitLine: {lineStyle:{type:'dashed'}}
-                            },
-                            {
-                                gridIndex: 2,
-                                type : 'value',
-                                position: 'top',
-                                splitLine: {lineStyle:{type:'dashed'}}
-                            },
-                            {
-                                gridIndex: 3,
-                                type : 'value',
-                                position: 'top',
-                                splitLine: {lineStyle:{type:'dashed'}}
-                            },
-                            {
-                                gridIndex: 4,
-                                type : 'value',
-                                position: 'top',
-                                splitLine: {lineStyle:{type:'dashed'}}
-                            },
-                            {
-                                gridIndex: 5,
-                                type : 'value',
-                                position: 'top',
-                                splitLine: {lineStyle:{type:'dashed'}}
-                            }
-                        ],
-                        yAxis: [
-                            {
-                                gridIndex: 0,
-                                type : 'category',
-                                axisLine: {show: false},
-                                axisLabel: {show: false},
-                                axisTick: {show: false},
-                                splitLine: {show: false},
-                                data : rid19[0].ydata
-                            },
-                            {
-                                gridIndex: 1,
-                                type : 'category',
-                                axisLine: {show: false},
-                                axisLabel: {show: false},
-                                axisTick: {show: false},
-                                splitLine: {show: false},
-                                data : rid19[1].ydata
-                            },
-                            {
-                                gridIndex: 2,
-                                type : 'category',
-                                axisLine: {show: false},
-                                axisLabel: {show: false},
-                                axisTick: {show: false},
-                                splitLine: {show: false},
-                                data : rid19[2].ydata
-                            },
-                            {
-                                gridIndex: 3,
-                                type : 'category',
-                                axisLine: {show: false},
-                                axisLabel: {show: false},
-                                axisTick: {show: false},
-                                splitLine: {show: false},
-                                data : rid19[3].ydata
-                            },
-                            {
-                                gridIndex: 4,
-                                type : 'category',
-                                axisLine: {show: false},
-                                axisLabel: {show: false},
-                                axisTick: {show: false},
-                                splitLine: {show: false},
-                                data : rid19[4].ydata
-                            },
-                            {
-                                gridIndex: 5,
-                                type : 'category',
-                                axisLine: {show: false},
-                                axisLabel: {show: false},
-                                axisTick: {show: false},
-                                splitLine: {show: false},
-                                data : rid19[5].ydata
-                            }
-                        ],
-                        series : [
-                            {
-                                name:rid19[0].name,
-                                type:'bar',
-                                xAxisIndex: [0],
-                                yAxisIndex: [0],
-                                label: {
-                                    normal: {
-                                        show: true,
-                                        formatter: '{a}:{b}'
-                                    }
-                                },
-                                data:[
-                                    {value:rid19[0].seriesData[0].value, label: rid19[0].seriesData[0].label},
-                                    {value:rid19[0].seriesData[1].value, label: rid19[0].seriesData[1].label},
-                                    {value:rid19[0].seriesData[2].value, label: rid19[0].seriesData[2].label},
-                                    {value:rid19[0].seriesData[3].value, label: rid19[0].seriesData[3].label},
-                                    {value:rid19[0].seriesData[4].value, label: rid19[0].seriesData[4].label},
-                                    {value:rid19[0].seriesData[5].value, label: rid19[0].seriesData[5].label},
-                                    {value:rid19[0].seriesData[6].value, label: rid19[0].seriesData[6].label},
-                                    {value:rid19[0].seriesData[7].value, label: rid19[0].seriesData[7].label}
-                                ]
-                            },{
-                                name:rid19[1].name,
-                                type:'bar',
-                                xAxisIndex: [1],
-                                yAxisIndex: [1],
-                                label: {
-                                    normal: {
-                                        show: true,
-                                        formatter: '{a}:{b}'
-                                    }
-                                },
-                                data:[
-                                    {value:rid19[1].seriesData[0].value, label: rid19[0].seriesData[0].label},
-                                    {value:rid19[1].seriesData[1].value, label: rid19[0].seriesData[1].label},
-                                    {value:rid19[1].seriesData[2].value, label: rid19[0].seriesData[2].label},
-                                    {value:rid19[1].seriesData[3].value, label: rid19[0].seriesData[3].label},
-                                    {value:rid19[1].seriesData[4].value, label: rid19[0].seriesData[4].label},
-                                    {value:rid19[1].seriesData[5].value, label: rid19[0].seriesData[5].label},
-                                    {value:rid19[1].seriesData[6].value, label: rid19[0].seriesData[6].label},
-                                    {value:rid19[1].seriesData[7].value, label: rid19[0].seriesData[7].label}
-                                ]
-                            },{
-                                name:rid19[2].name,
-                                type:'bar',
-                                xAxisIndex: [2],
-                                yAxisIndex: [2],
-                                label: {
-                                    normal: {
-                                        show: true,
-                                        formatter: '{a}:{b}'
-                                    }
-                                },
-                                data:[
-                                    {value:rid19[2].seriesData[0].value, label: rid19[0].seriesData[0].label},
-                                    {value:rid19[2].seriesData[1].value, label: rid19[0].seriesData[1].label},
-                                    {value:rid19[2].seriesData[2].value, label: rid19[0].seriesData[2].label},
-                                    {value:rid19[2].seriesData[3].value, label: rid19[0].seriesData[3].label},
-                                    {value:rid19[2].seriesData[4].value, label: rid19[0].seriesData[4].label},
-                                    {value:rid19[2].seriesData[5].value, label: rid19[0].seriesData[5].label},
-                                    {value:rid19[2].seriesData[6].value, label: rid19[0].seriesData[6].label},
-                                    {value:rid19[2].seriesData[7].value, label: rid19[0].seriesData[7].label}
-                                ]
-                            },{
-                                name:rid19[3].name,
-                                type:'bar',
-                                xAxisIndex: [3],
-                                yAxisIndex: [3],
-                                label: {
-                                    normal: {
-                                        show: true,
-                                        formatter: '{a}:{b}'
-                                    }
-                                },
-                                data:[
-                                    {value:rid19[3].seriesData[0].value, label: rid19[0].seriesData[0].label},
-                                    {value:rid19[3].seriesData[1].value, label: rid19[0].seriesData[1].label},
-                                    {value:rid19[3].seriesData[2].value, label: rid19[0].seriesData[2].label},
-                                    {value:rid19[3].seriesData[3].value, label: rid19[0].seriesData[3].label},
-                                    {value:rid19[3].seriesData[4].value, label: rid19[0].seriesData[4].label},
-                                    {value:rid19[3].seriesData[5].value, label: rid19[0].seriesData[5].label},
-                                    {value:rid19[3].seriesData[6].value, label: rid19[0].seriesData[6].label},
-                                    {value:rid19[3].seriesData[7].value, label: rid19[0].seriesData[7].label}
-                                ]
-                            },{
-                                name:rid19[4].name,
-                                type:'bar',
-                                xAxisIndex: [4],
-                                yAxisIndex: [4],
-                                label: {
-                                    normal: {
-                                        show: true,
-                                        formatter: '{a}:{b}'
-                                    }
-                                },
-                                data:[
-                                    {value:rid19[4].seriesData[0].value, label: rid19[0].seriesData[0].label},
-                                    {value:rid19[4].seriesData[1].value, label: rid19[0].seriesData[1].label},
-                                    {value:rid19[4].seriesData[2].value, label: rid19[0].seriesData[2].label},
-                                    {value:rid19[4].seriesData[3].value, label: rid19[0].seriesData[3].label},
-                                    {value:rid19[4].seriesData[4].value, label: rid19[0].seriesData[4].label},
-                                    {value:rid19[4].seriesData[5].value, label: rid19[0].seriesData[5].label},
-                                    {value:rid19[4].seriesData[6].value, label: rid19[0].seriesData[6].label},
-                                    {value:rid19[4].seriesData[7].value, label: rid19[0].seriesData[7].label}
-                                ]
-                            },{
-                                name:rid19[5].name,
-                                type:'bar',
-                                xAxisIndex: [5],
-                                yAxisIndex: [5],
-                                label: {
-                                    normal: {
-                                        show: true,
-                                        formatter: '{a}:{b}'
-                                    }
-                                },
-                                data:[
-                                    {value:rid19[5].seriesData[0].value, label: rid19[0].seriesData[0].label},
-                                    {value:rid19[5].seriesData[1].value, label: rid19[0].seriesData[1].label},
-                                    {value:rid19[5].seriesData[2].value, label: rid19[0].seriesData[2].label},
-                                    {value:rid19[5].seriesData[3].value, label: rid19[0].seriesData[3].label},
-                                    {value:rid19[5].seriesData[4].value, label: rid19[0].seriesData[4].label},
-                                    {value:rid19[5].seriesData[5].value, label: rid19[0].seriesData[5].label},
-                                    {value:rid19[5].seriesData[6].value, label: rid19[0].seriesData[6].label},
-                                    {value:rid19[5].seriesData[7].value, label: rid19[0].seriesData[7].label}
-                                ]
-                            }
-                        ]
-                    };
-                }else{
-                    var len = option.series.length;
-                    if(len!=0){
-                    option.series[len-1].lineStyle = {};
-                    option.series[len-1].lineStyle.normal = {};
-                    option.series[len-1].lineStyle.normal.color = '#000000';
-                    }
-                }
-                myChart.setOption(option);
+        $.ajax({
+            type: "POST",
+            url: rootPath + '/dataListener/getLine.shtml?startday='+startday+'&endday='+endday,
+            cache:false,
+            async: false,
+            dataType: 'json',
+            success: function (json) {
+                data = JSON.parse(json);
+                ydata = data.ydata;
+                xdata = data.xdata;
             }
+        });
+
+        var option = {
+            title: {
+                text: "实时活跃数",
+                subtext: "7天内每天实时活跃数",
+                x: 'center'
+            },
+            legend: {
+                data: legend,
+                bottom: 0
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    animation: false
+                }
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    dataView: {show: true, readOnly: false},
+                    magicType: {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                    restore: {show: true},
+                    saveAsImage: {show: true}
+                }
+            },
+            label: {
+                normal: {
+                    show: true,
+                    formatter: '{c}'
+                }
+            },
+            grid: {
+                width: 'auto',
+                height: 'auto'
             }
+            ,
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                axisTick: {
+                    show: true,
+                    interval: 0
+                },
+                //axisLabel:{
+                //    show :true,
+                //    interval:0
+                //},
+                name: "日期",
+                data: xdata
+            },
+            yAxis: {
+                type: 'value',
+                splitLine: {
+                    show: true
+                }
+                //axisLabel:{
+                //    show :true,
+                //    interval:0
+                //}
+            },
+            series: ydata
+        };
+
+
+        myChart.setOption(option);
     }
 
 

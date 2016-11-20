@@ -64,7 +64,7 @@ public class UserController extends BaseController {
             UserFormMap userFormMap = getFormMap(UserFormMap.class);
             userFormMap.put("txtGroupsSelect", txtGroupsSelect);
             PasswordHelper passwordHelper = new PasswordHelper();
-            userFormMap.set("password", "37hadoop");
+            userFormMap.set("password", "123456");
             passwordHelper.encryptPassword(userFormMap);
             userMapper.addEntity(userFormMap);//新增后返回新增信息
             if (!Common.isEmpty(txtGroupsSelect)) {

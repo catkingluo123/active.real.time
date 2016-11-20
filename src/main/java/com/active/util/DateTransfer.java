@@ -12,14 +12,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 /**
- * @ClassName: Util
- * @Description: TODO
- * @author 沈龙
- * @date 2015-3-1 下午5:11:56
  *
  */
 public class DateTransfer {
@@ -37,7 +32,7 @@ public class DateTransfer {
         String startDay = "20151030";
         System.out.println(getTime(startDay));
         // System.out.println(getDate(startDay, 2, -2));
-        System.out.println(getDate(startDay,1, -6));
+        System.out.println(getDate(startDay,1, 1));
     }
 
     public static String getDate(String startDay, int flag, int interval) {
@@ -100,11 +95,6 @@ public class DateTransfer {
             curr.add(Calendar.MONTH, 1);
         }
         return list;
-    }
-
-    public static String timestamp2date(String timestamp) {
-        SimpleDateFormat Format = new SimpleDateFormat("MM-dd HH:mm");
-        return Format.format(new Date(Long.valueOf(timestamp+"000")));
     }
 }
 
