@@ -9,7 +9,7 @@
 <link href="/favicon.ico" type="image/x-icon" rel=icon>
 <link href="/favicon.ico" type="image/x-icon" rel="shortcut icon">
 <meta name="renderer" content="webkit">
-<title>登录－大盘监控WEB</title>
+<title>登录－活跃量监控</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet"
 	href="${ctx}/admin_files/min.css">
@@ -60,7 +60,7 @@
 						<td align="left"><img
 							src="${ctx}/admin_files/logo_left.png"
 							alt="Logo"></td>
-							<td align="center" style="font-weight: bold;color: gray;">大盘监控WEB</td>
+							<td align="center" style="font-weight: bold;color: gray;">活跃量监控WEB</td>
 						<td align="right"><img
 							src="${ctx}/admin_files/logo_left.png"
 							alt="Logo"></td>
