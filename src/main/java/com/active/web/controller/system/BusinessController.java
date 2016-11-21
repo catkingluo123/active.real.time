@@ -113,13 +113,13 @@ public class BusinessController extends BaseController {
         long day = (b1.getTime()-a1.getTime())/(24*60*60*1000);
         dayList.add(startday);
         dayList.add(startday);
-        activeList.add(String.valueOf(jedis.pfcount(startday)));
+        activeList.add(String.valueOf(jedis.pfcount("11201_"+startday)));
         Ydata ydata = new Ydata("line");
         ydata.setName("活跃数");
         for (int i=1;i<=day;i++){
             String for_day = DateTransfer.getDate(startday, 1, i);
             dayList.add(for_day);
-            activeList.add(String.valueOf(jedis.pfcount(for_day)));
+            activeList.add(String.valueOf(jedis.pfcount("11201_"+for_day)));
         }
         jedis.close();
         ydata.setData(activeList);

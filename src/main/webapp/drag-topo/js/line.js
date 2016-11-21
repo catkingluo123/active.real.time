@@ -15,7 +15,7 @@ $(function(){
     };
     var end = {
         elem: '#endday',
-        format: 'YYYY-MM-DD hh',
+        format: 'YYYY-MM-DD',
         max: laydate.now(),
         istime: true,
         istoday: true,
